@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de LED y Foco</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-size: 1rem;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .alert {
+            color: green;
+        }
+
+        .alert-error {
+            color: red;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Control de LED y Foco</h1>
+    <div class="button-container">
+        <button onclick="controlarDispositivo('on')">Encender</button>
+        <button onclick="controlarDispositivo('off')">Apagar</button>
+    </div>
+
+    <div class="status">
+        <p id="statusMessage"></p>
+    </div>
+
+    <script>
+        const deviceID = "0a10aced202194944a05a6c0"; // Reemplaza con el ID de tu dispositivo
+        const accessToken = "8776cc47182f6f3a781af70d753e9717ed5c43b8"; // Reemplaza con tu Access Token
+        const functionName = "led";
+
+        async function controlarDispositivo(parametro) {
+            const url = `https://api.particle.io/v1/devices/${deviceID}/${functionName}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `access_token=${accessToken}&arg=${parametro}`
+                });
+
+                const data = await response.json();
+                const statusMessage = document.getElementById("statusMessage");
+
+                if (data.return_value === 1) {
+                    statusMessage.textContent = "Dispositivo encendido.";
+                    statusMessage.className = "alert";
+                } else if (data.return_value === 0) {
+                    statusMessage.textContent = "Dispositivo apagado.";
+                    statusMessage.className = "alert";
+                } else {
+                    statusMessage.textContent = "Parámetro incorrecto. Intenta de nuevo.";
+                    statusMessage.className = "alert-error";
+                }
+            } catch (error) {
+                console.error("Error al controlar el dispositivo:", error);
+                const statusMessage = document.getElementById("statusMessage");
+                statusMessage.textContent = "Error al conectar con el dispositivo.";
+                statusMessage.className = "alert-error";
+            }
+        }
+    </script>
+</body>
+</html>
